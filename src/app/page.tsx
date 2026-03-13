@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import Image from "next/image";
 
 export default function Home() {
   const [studentName, setStudentName] = useState('');
@@ -56,8 +57,11 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4">
       <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-        <div className="p-8">
+        <div className="px-4 py-6 md:p-8">
           <div className="text-center mb-8">
+            <div className="size-20 relative mx-auto">
+              <Image src="/d-nobg.png" alt="Logo" fill className="object-contain"  />
+            </div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">DropDesk</h1>
             <p className="text-slate-500 dark:text-slate-400">Enter your details to submit your assignment</p>
           </div>
@@ -93,7 +97,7 @@ export default function Home() {
                 className="w-full px-5 py-3 rounded-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm text-center text-xl tracking-widest font-mono"
                 placeholder="----"
               />
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-1">
                 A 4-digit code provided by your instructor.
               </p>
             </div>

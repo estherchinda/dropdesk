@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -12,8 +13,12 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="flex justify-between items-center h-20">
           <div className="shrink-0 flex items-center">
-            <Link href="/" className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-indigo-400 dark:from-indigo-400 dark:to-indigo-300 hover:opacity-90 transition">
-              DropDesk
+            <Link href="/" className='flex items-center relative'>
+            <div className="size-14 relative">
+              <Image  src="/d-nobg.png" alt="Logo" fill  />
+            </div>
+              <span className="hidden md:block text-2xl font-bold uppercase">DropDesk</span>
+              <div className="h-0.5 w-22 absolute right-6 bg-white bottom-2"></div>
             </Link>
           </div>
 

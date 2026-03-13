@@ -12,6 +12,7 @@ type Grade = {
   student_name: string;
   assignment_title: string;
   grade: string;
+  comment: string | null;
 };
 
 export default function GradesPage() {
@@ -26,7 +27,7 @@ export default function GradesPage() {
       try {
         const { data, error: dbError } = await supabase
           .from('submissions')
-          .select('id, student_name, assignment_title, grade')
+          .select('id, student_name, assignment_title, grade, comment')
           .not('grade', 'is', null)
           .order('assignment_title', { ascending: true })
           .order('student_name', { ascending: true });
@@ -152,9 +153,12 @@ export default function GradesPage() {
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                   Student Name
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                  Score
-                                </th>
+                                  <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                    Feedback
+                                  </th>
+                                  <th scope="col" className="px-6 py-3 text-right text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                    Score
+                                  </th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -162,6 +166,13 @@ export default function GradesPage() {
                                 <tr key={grade.id} className="hover:bg-slate-100 dark:hover:bg-slate-700/50 transition">
                                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">
                                     {grade.student_name}
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                    {grade.comment ? (
+                                      <div className="tiptap prose-p:my-0" dangerouslySetInnerHTML={{ __html: grade.comment }} />
+                                    ) : (
+                                      <span className="italic opacity-50 text-xs">No feedback provided</span>
+                                    )}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                                     <span className="inline-flex items-center px-3 py-1 rounded-full font-bold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">

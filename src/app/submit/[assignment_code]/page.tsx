@@ -235,7 +235,7 @@ export default function SubmitPage({ params }: { params: Promise<{ assignment_co
             </div>
           </div>
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-            <p className="text-slate-700 dark:text-slate-300 mb-4 whitespace-pre-wrap">{assignment.description}</p>
+            <div className="text-slate-700 dark:text-slate-300 mb-4 tiptap" dangerouslySetInnerHTML={{ __html: assignment.description }}></div>
             <div className="flex items-center text-sm font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-1.5 rounded-full">
               <Calendar className="w-4 h-4 mr-2" />
               Due: {format(new Date(assignment.deadline), 'PPp')}

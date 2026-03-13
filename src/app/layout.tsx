@@ -25,7 +25,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ToastContainer position="bottom-right" theme="colored" />
+        <ToastContainer 
+          position="bottom-right" 
+          theme="dark" 
+          hideProgressBar={true}
+          newestOnTop
+          closeOnClick
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          toastClassName="font-sans"
+        />
         <div className="min-h-screen flex flex-col">
           <Navigation />
           

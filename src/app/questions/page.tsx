@@ -66,7 +66,7 @@ export default function QuestionsPage() {
             <p className="text-slate-500 dark:text-slate-400 mb-8">
               Your instructor has received your question and will get back to you soon.
             </p>
-            <div className="space-x-4">
+            <div className="space-y-4 md:space-x-4 md:space-y-0">
               <Button 
                 onClick={() => setIsSuccess(false)} 
                 className="inline-flex items-center px-6 py-2 border border-slate-300 dark:border-slate-600 shadow-sm text-sm font-medium rounded-full text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
@@ -79,7 +79,7 @@ export default function QuestionsPage() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="px-4 py-6 md:p-8 space-y-6">
             <div className="space-y-2">
               <label htmlFor="studentName" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                 Full Name
@@ -105,7 +105,7 @@ export default function QuestionsPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 required
                 rows={5}
-                className="w-full px-5 py-4 rounded-3xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition resize-none custom-scrollbar"
+                className="w-full h-40 px-5 py-4 rounded-3xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition resize-none custom-scrollbar outline-none"
                 placeholder="How do I setup the project structure?"
               />
             </div>
