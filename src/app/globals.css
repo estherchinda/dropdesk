@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-xl: 1rem;
+  --radius-lg: 0.75rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
+}
+
+@layer base {
+  :root {
+    --background: #fdfdfd;
+    --foreground: #111827;
+    
+    --primary: #4f46e5;
+    --primary-foreground: #ffffff;
+    
+    --secondary: #f3f4f6;
+    --secondary-foreground: #1f2937;
+    
+    --muted: #f9fafb;
+    --muted-foreground: #6b7280;
+    
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #4f46e5;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0f172a;
+      --foreground: #f8fafc;
+      
+      --primary: #6366f1;
+      --primary-foreground: #ffffff;
+      
+      --secondary: #1e293b;
+      --secondary-foreground: #f1f5f9;
+      
+      --muted: #0f172a;
+      --muted-foreground: #94a3b8;
+      
+      --border: #334155;
+      --input: #334155;
+      --ring: #6366f1;
+    }
+  }
+
+  .dark {
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    
+    --primary: #6366f1;
+    --primary-foreground: #ffffff;
+    
+    --secondary: #1e293b;
+    --secondary-foreground: #f1f5f9;
+    
+    --muted: #0f172a;
+    --muted-foreground: #94a3b8;
+    
+    --border: #334155;
+    --input: #334155;
+    --ring: #6366f1;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground tracking-tight antialiased transition-colors duration-300;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+@layer components {
+  .no-stepper {
+    /* Hide spinners in WebKit browsers (Chrome, Safari) */
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    /* Hide spinners in Firefox */
+    -moz-appearance: textfield;
+  }
+}   
