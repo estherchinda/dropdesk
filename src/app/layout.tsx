@@ -5,6 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import Navigation from '@/components/Navigation';
+import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -37,15 +38,13 @@ export default function RootLayout({
           toastClassName="font-sans"
         />
         <div className="min-h-screen flex flex-col">
-          <Navigation />
+          <Suspense fallback={<div className="h-20 bg-white/80 dark:bg-slate-900/80 sticky top-0 border-b border-slate-200 dark:border-slate-800 z-50" />}>
+            <Navigation />
+          </Suspense>
           
           <main className="grow bg-slate-50/50 dark:bg-slate-900/50">
             {children}
           </main>
-          
-          <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-            <p>© {new Date().getFullYear()} DropDesk. All rights reserved.</p>
-          </footer>
         </div>
       </body>
     </html>

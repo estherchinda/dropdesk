@@ -1,137 +1,286 @@
-'use client'; 
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
+'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Loader2 } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Loader2, Lock, User, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
 import Image from "next/image";
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function Home() {
-  const [studentName, setStudentName] = useState('');
-  const [assignmentCode, setAssignmentCode] = useState('');
-  const [error, setError] = useState('');
+  return (
+    <Suspense fallback={
+      <div className="flex h-[calc(100vh-80px)] items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-600 dark:text-indigo-400" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
+  const [activeRole, setActiveRole] = useState<'student' | 'instructor'>('student');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
+
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!studentName.trim() || assignmentCode.length !== 4) {
-      setError('Please enter a valid name and a 4-digit code.');
-      return;
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    if (roleParam === 'instructor') {
+      setActiveRole('instructor');
+    } else {
+      setActiveRole('student');
     }
+  }, [searchParams]);
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        checkRole(data.session);
+      } else {
+        setIsSessionLoading(false);
+      }
+    });
+  }, []);
+
+  const checkRole = async (session: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle(); // maybeSingle returns null instead of throwing error if zero rows
+
+      if (error) throw error;
+
+      if (!data) {
+        // Wait for auth headers to propagate fully in client session execution
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Profile doesn't exist (e.g. historical account). Auto-create using active state.
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: session.user.id,
+            email: session.user.email || '',
+            role: activeRole,
+          });
+
+        if (insertError) throw insertError;
+        
+        if (activeRole === 'instructor') {
+          router.push('/instructor');
+        } else {
+          router.push('/student');
+        }
+        return;
+      }
+
+      if (data.role === 'instructor') {
+        router.push('/instructor');
+      } else if (data.role === 'student') {
+        router.push('/student');
+      }
+    } catch (err) {
+      setIsSessionLoading(false);
+    }
+  };
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
+    setAuthError(null);
 
     try {
-      const { data, error: dbError } = await supabase
-        .from('assignments')
-        .select('id, deadline')
-        .eq('assignment_code', assignmentCode)
-        .single();
+      if (isSignUp) {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-      if (dbError || !data) {
-        setError('Invalid assignment code. Please try again.');
-        setIsLoading(false);
-        return;
+        if (signUpError) throw signUpError;
+        
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: email,
+              role: activeRole,
+            });
+
+          if (profileError) throw profileError;
+          toast.success('Account created successfully!');
+          
+          if (activeRole === 'instructor') router.push('/instructor');
+          else router.push('/student');
+        }
+      } else {
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) throw signInError;
+
+        if (data.session) {
+            toast.success('Logged in successfully!');
+            checkRole(data.session);
+        }
       }
-
-      if (data.deadline && new Date(data.deadline) < new Date()) {
-        setError('This assignment code is expired and the deadline passed.');
-        setIsLoading(false);
-        return;
-      }
-
-      router.push(`/submit/${assignmentCode}?student=${encodeURIComponent(studentName.trim())}`);
     } catch (err: any) {
-      setError('An error occurred. Please try again later.');
+      setAuthError(err.message || 'Authentication failed.');
+    } finally {
       setIsLoading(false);
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      toast.error('Please enter your email address first.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success('Password reset link sent to your email!');
+      setIsForgotPassword(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send reset link.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isSessionLoading) {
+    return (
+      <div className="flex h-[calc(100vh-80px)] items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-600 dark:text-indigo-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4">
-      <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-        <div className="px-4 py-6 md:p-8">
-          <div className="text-center mb-8">
-            <div className="size-20 relative mx-auto">
-              <Image src="/d-nobg.png" alt="Logo" fill className="object-contain"  />
+      <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+        <div className="p-8">
+          <div className="text-center mb-6">
+            <div className="size-16 relative mx-auto mb-2 bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-2xl flex items-center justify-center">
+              <Image src="/d-nobg.png" alt="Logo" fill className="object-contain p-2" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">DropDesk</h1>
-            <p className="text-slate-500 dark:text-slate-400">Enter your details to submit your assignment</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              DropDesk {activeRole === 'instructor' ? 'Instructor' : 'Student'}
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {isForgotPassword 
+                ? 'Send a verification email to restore access' 
+                : activeRole === 'instructor' 
+                  ? 'Manage classes and grade submissions' 
+                  : 'View assignments and track your scores'}
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+
+
+          <form onSubmit={isForgotPassword ? handleForgotPassword : handleAuth} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="studentName" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Full Name
-              </label>
-              <Input
-                id="studentName"
-                type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                autoComplete="name"
-                required
-                className="w-full px-5 py-3 rounded-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm"
-                placeholder="John Doe"
-              />
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Email Address</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-slate-400" />
+                </div>
+                <Input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-11 py-3 rounded-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                  placeholder={activeRole === 'instructor' ? 'instructor@school.edu' : 'student@school.edu'}
+                />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="assignmentCode" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Assignment Code
-              </label>
-              <Input
-                id="assignmentCode"
-                type="text"
-                value={assignmentCode}
-                onChange={(e) => setAssignmentCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                required
-                pattern="\d{4}"
-                className="w-full px-5 py-3 rounded-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm text-center text-xl tracking-widest font-mono"
-                placeholder="----"
-              />
-              <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-1">
-                A 4-digit code provided by your instructor.
-              </p>
-            </div>
+            {!isForgotPassword && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+                     {!isSignUp && (
+                          <button type="button" onClick={() => setIsForgotPassword(true)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Forgot password?</button>
+                     )}
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <Input
+                    type={isPasswordVisible ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-11 pr-10 py-3 rounded-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                    placeholder="••••••••"
+                  />
+                  <div onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer">
+                    {isPasswordVisible ? <Eye className="size-5 text-slate-400" /> : <EyeOff className='size-5 text-slate-400' />}
+                  </div>
+                </div>
+              </div>
+            )}
 
-            {error && (
+            {authError && (
               <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium">
-                {error}
+                {authError}
               </div>
             )}
 
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center items-center py-3 px-5 rounded-full text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors shadow-md"
+              className="w-full flex justify-center items-center py-3 px-5 rounded-full text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-70 transition-colors shadow-md"
             >
               {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Verifying...
-                </>
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                'Access Portal'
+                isForgotPassword ? 'Send Reset Link' : isSignUp ? 'Create Account' : 'Sign In'
               )}
             </Button>
           </form>
-        </div>
-        
-        <div className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 p-4 flex justify-between text-sm">
-          <Link href="/questions" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-            Ask a Question
-          </Link>
-          <Link href="/grades" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-            Check Grades
-          </Link>
+
+          <div className="mt-6 text-center space-y-2">
+            {!isForgotPassword ? (
+                <button
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 hover:underline block w-full"
+                >
+                  {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+                </button>
+            ) : (
+                <button
+                  onClick={() => setIsForgotPassword(false)}
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 hover:underline block w-full"
+                >
+                  Back to Sign In
+                </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

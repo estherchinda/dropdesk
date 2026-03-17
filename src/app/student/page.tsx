@@ -3,11 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function InstructorDashboard() {
+export default function StudentDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/instructor/submissions');
+    router.replace('/student/assignments');
   }, [router]);
 
   return null;
