@@ -3,11 +3,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
-import { Loader2, MessageSquare, Send, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, CheckCircle, Clock, Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
-
 import { useStudent } from '../layout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { X } from 'lucide-react';
@@ -18,7 +16,7 @@ export function StudentQuestions() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
-  const [studentName, setStudentName] = useState(''); // Used to map to student_name in submissions/questions
+  const [studentName, setStudentName] = useState(user.email);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -66,7 +64,7 @@ export function StudentQuestions() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !studentName.trim()) {
+    if (!message.trim()) {
       toast.error('Please fill in both fields.');
       return;
     }
@@ -88,6 +86,7 @@ export function StudentQuestions() {
       setMessage('');
       setIsModalOpen(false); // Close Modal
       fetchQuestions(); // Refresh
+
     } catch (err: any) {
       toast.error(err.message || 'Failed to ask question.');
     } finally {
@@ -107,10 +106,12 @@ export function StudentQuestions() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Questions</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">My Questions</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">Ask questions and see instructor answers.</p>
          </div>
-         <Button onClick={() => setIsModalOpen(true)} variant="default">Ask a Question</Button>
+         <Button onClick={() => setIsModalOpen(true)} variant="default">
+          <Plus className="w-4 h-4 mr-2" />
+          Ask a Question</Button>
       </div>
 
       {/* Ask Question Modal */}
@@ -120,32 +121,20 @@ export function StudentQuestions() {
             <button onClick={() => setIsModalOpen(false)} className="absolute right-4 top-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
                 <X className="w-5 h-5 text-slate-500" />
             </button>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Ask a Question</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-10 text-center">Ask a Question</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Your Email Address</label>
-                <Input
-                  type="email"
-                  value={user.email}
-                  onChange={(e) => setStudentName(e.target.value)}
-                  disabled
-                  required
-                  className="w-full px-4 py-2 rounded-full border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/80 text-slate-500 cursor-not-allowed shadow-sm"
-                />
-              </div>
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Message</label>
-                <RichTextEditor
-                  content={message}
-                  onChange={setMessage}
-                  placeholder="What setup errors are you running into?"
-                />
-              </div>
-              <div className="flex space-x-2">
-                  <Button type="button" onClick={() => setIsModalOpen(false)} variant="outline" className="w-full">Cancel</Button>
-                  <Button type="submit" disabled={isSubmitting} variant="default" className="w-full flex justify-center items-center">
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                    Send
+              <RichTextEditor
+                content={message}
+                onChange={setMessage}
+                placeholder="What setup errors are you running into?"
+                className='mb-10'
+              />
+              <div className="flex space-x-2 justify-end items-center">
+                  <Button type="button" onClick={() => setIsModalOpen(false)} variant="outline">
+                    Cancel
+                    </Button>
+                  <Button type="submit" disabled={isSubmitting} variant="default" className="flex justify-center items-center">
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : 'Send Question'}
                   </Button>
               </div>
             </form>
@@ -155,9 +144,8 @@ export function StudentQuestions() {
 
       {/* Questions list */}
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">My Questions</h2>
         {questions.length === 0 ? (
-          <EmptyState title="No questions asked" description="Ask a question above to get help from your instructor." />
+          <EmptyState title="No questions asked yet" description="Ask a question above to get help from your instructor." />
         ) : (
           <div className="space-y-4">
             {questions.map((q) => (

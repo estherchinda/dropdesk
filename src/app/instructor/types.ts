@@ -1,5 +1,6 @@
 export type Submission = {
   id: string;
+  student_id: string;
   student_name: string;
   assignment_code: string;
   assignment_title: string;

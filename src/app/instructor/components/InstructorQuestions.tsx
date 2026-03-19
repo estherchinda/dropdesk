@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { Loader2, MessageSquare, Send, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { EmptyState } from '@/components/ui/EmptyState';
+
 
 export function InstructorQuestions() {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -63,6 +65,8 @@ export function InstructorQuestions() {
       setAnsweringId(null);
       setAnswerText('');
       toast.success('Answer saved!');
+
+
     } catch (err: any) {
       toast.error('Error saving answer.');
     } finally {
@@ -86,9 +90,11 @@ export function InstructorQuestions() {
       </div>
 
       {questions.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-500">
-           No questions found.
-        </div>
+        <EmptyState
+          icon={<MessageSquare className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-3" />}
+          title="No questions yet"
+          description="Students will appear here when they ask questions."
+        />
       ) : (
         <div className="space-y-4">
           {questions.map((q) => (
@@ -123,7 +129,7 @@ export function InstructorQuestions() {
                        <div className="flex space-x-2">
                             <Button onClick={() => setAnsweringId(null)} className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white rounded-full">Cancel</Button>
                             <Button onClick={() => handleSaveAnswer(q.id)} disabled={isSaving} className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center">
-                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />} Save Answer
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />} Send
                             </Button>
                        </div>
                   </div>

@@ -98,7 +98,7 @@ export function ProfileView() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-md">
+    <div className="w-full mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-md">
       <div className="flex flex-col items-center mb-6">
         <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mb-3">
           {initials ? (
@@ -140,9 +140,15 @@ export function ProfileView() {
           />
         </div>
 
-        <Button type="submit" disabled={saving} variant="default" className="w-full flex justify-center items-center font-semibold">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+        <Button type="submit" disabled={saving} variant="default" className="flex justify-center items-center font-semibold">
+          {saving ? 
+          <>
+          <Loader2 className="w-4 h-4 animate-spin" /> 
+          </> 
+          : 
+          <>
           Save Changes
+          </>}
         </Button>
       </form>
     </div>

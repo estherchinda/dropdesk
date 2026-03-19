@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Loader2, Search } from 'lucide-react';
 import { toast } from 'react-toastify';
-
-import { Submission, Assignment } from '../types';
-import { SubmissionList } from '../components/SubmissionList';
-import { FeedbackModal } from '../components/FeedbackModal';
+import { Submission, Assignment } from '../../../types';
+import { SubmissionList } from '../../../components/SubmissionList';
+import { FeedbackModal } from '../../../components/FeedbackModal';
 
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -87,6 +86,7 @@ export default function SubmissionsPage() {
       setSubmissions(prev => prev.map(s => s.id === id ? { ...s, grade: formattedGrade } : s));
       setEditingId(null);
       toast.success('Grade saved successfully!');
+
     } catch (err: any) {
       toast.error(`Error updating grade: ${err.message}`);
     } finally {
@@ -115,6 +115,7 @@ export default function SubmissionsPage() {
       setSubmissions(prev => prev.map(s => s.id === selectedFeedbackSub.id ? { ...s, comment: formattedComment } : s));
       setFeedbackModalOpen(false);
       toast.success('Feedback saved successfully!');
+
     } catch (err: any) {
       toast.error(`Error saving feedback: ${err.message}`);
     } finally {

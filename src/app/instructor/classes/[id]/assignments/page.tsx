@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/Button';
 import { Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-import { Assignment, Submission } from '../types';
-import { AssignmentForm } from '../components/AssignmentForm';
-import { AssignmentList } from '../components/AssignmentList';
-import { DeleteAssignmentModal } from '../components/DeleteAssignmentModal';
+
+import { Assignment, Submission } from '../../../types';
+import { AssignmentForm } from '../../../components/AssignmentForm';
+import { AssignmentList } from '../../../components/AssignmentList';
+import { DeleteAssignmentModal } from '../../../components/DeleteAssignmentModal';
 
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -103,6 +104,8 @@ export default function AssignmentsPage() {
       setNewDeadline('');
       setNewTotalScore('10');
       toast.success('Assignment created successfully!');
+
+
     } catch (err: any) {
       toast.error(`Error creating assignment: ${err.message}`);
     } finally {

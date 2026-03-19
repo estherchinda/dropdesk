@@ -1,6 +1,6 @@
 'use client';
 
-import { InstructorQuestions } from '../components/InstructorQuestions';
+import { InstructorQuestions } from '../../../components/InstructorQuestions';
 
 export default function QuestionsPage() {
   return (

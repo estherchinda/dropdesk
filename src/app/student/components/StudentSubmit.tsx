@@ -16,12 +16,13 @@ type Assignment = {
   description: string;
   deadline: string;
   created_at: string;
+  class_id?: string;
 };
 
 interface StudentSubmitProps {
   assignmentCode: string;
   user: any;
-  onBack: () => void;
+  onBack: (classId?: string) => void;
 }
 
 export function StudentSubmit({ assignmentCode, user, onBack }: StudentSubmitProps) {
@@ -142,6 +143,7 @@ export function StudentSubmit({ assignmentCode, user, onBack }: StudentSubmitPro
 
       setIsSubmitted(true);
       toast.success("Assignment submitted successfully!");
+
     } catch (err: any) {
       setError(`Upload failed: ${err.message}`);
     } finally {
@@ -163,7 +165,7 @@ export function StudentSubmit({ assignmentCode, user, onBack }: StudentSubmitPro
       <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-2xl border border-red-200 dark:border-red-800 text-center">
         <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">Error</h2>
         <p className="text-slate-700 dark:text-slate-300 mb-4">{error}</p>
-        <Button onClick={onBack} variant="default">
+        <Button onClick={() => onBack(assignment?.class_id)} variant="default">
           &larr; Back to Assignments
         </Button>
       </div>
@@ -177,7 +179,7 @@ export function StudentSubmit({ assignmentCode, user, onBack }: StudentSubmitPro
         <p className="text-slate-700 dark:text-slate-300 mb-6">
           You have already submitted an assignment for code <span className="font-bold">{assignmentCode}</span>.
         </p>
-        <Button onClick={onBack} variant="default">
+        <Button onClick={() => onBack(assignment?.class_id)} variant="default">
           Back to Assignments
         </Button>
       </div>
@@ -194,7 +196,7 @@ export function StudentSubmit({ assignmentCode, user, onBack }: StudentSubmitPro
         </div>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Submitted Successfully!</h2>
         <p className="text-slate-500 dark:text-slate-400 mb-6">Your work has been securely uploaded.</p>
-        <Button onClick={onBack} variant="default">
+        <Button onClick={() => onBack(assignment?.class_id)} variant="default">
           Return to Assignments
         </Button>
       </div>
@@ -204,7 +206,7 @@ export function StudentSubmit({ assignmentCode, user, onBack }: StudentSubmitPro
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-3">
-        <Button onClick={onBack} variant="ghost" size="icon">
+        <Button onClick={() => onBack(assignment?.class_id)} variant="ghost" size="icon">
           <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
         </Button>
         <div>

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { X, CheckCircle, Loader2, Save } from 'lucide-react';
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { Assignment } from '../types';
+import { DateTimePicker } from "@/components/ui/DateTimePicker";
 
 interface AssignmentFormProps {
   isCreating: boolean;
@@ -69,7 +70,7 @@ export function AssignmentForm({
 }: AssignmentFormProps) {
   if (isCreating) {
     return (
-      <div className="bg-white dark:bg-slate-800 shadow-md rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden p-6 mb-6">
+      <div className="bg-white dark:bg-slate-800 shadow-md rounded-2xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Create New Assignment</h2>
           <Button 
@@ -124,11 +125,9 @@ export function AssignmentForm({
             <div className="flex items-center gap-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Deadline</label>
-                <Input 
-                  type="datetime-local" 
+                <DateTimePicker 
                   value={newDeadline}
-                  onChange={e => setNewDeadline(e.target.value)}
-                  className="w-full px-5 py-2 border border-slate-300 dark:border-slate-600 rounded-full focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                  onChange={setNewDeadline}
                 />
               </div>
               <div className="flex-1">
@@ -167,7 +166,7 @@ export function AssignmentForm({
 
   if (editingAssignmentId) {
     return (
-      <div className="bg-white dark:bg-slate-800 shadow-md rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden p-6 mb-6">
+      <div className="bg-white dark:bg-slate-800 shadow-md rounded-2xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Edit Assignment</h2>
           <Button 
@@ -202,11 +201,9 @@ export function AssignmentForm({
           <div className="flex items-center gap-4">
             <div className="">
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Deadline</label>
-              <Input 
-                type="datetime-local" 
+              <DateTimePicker 
                 value={editDeadline}
-                onChange={e => setEditDeadline(e.target.value)}
-                className="w-full px-5 py-2 border border-slate-300 dark:border-slate-600 rounded-full focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                onChange={setEditDeadline}
               />
             </div>
             <div>

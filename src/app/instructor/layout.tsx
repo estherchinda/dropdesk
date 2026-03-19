@@ -3,7 +3,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Loader2, LayoutDashboard, FileCode, BookOpen, MessageSquare, User, LogOut, Menu, X } from 'lucide-react';
+import { Loader2, LayoutDashboard, FileCode, BookOpen, MessageSquare, User, LogOut, Menu, X, School, FolderOpen, ChevronLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
 
@@ -20,8 +20,31 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
   const [profileName, setProfileName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentClass, setCurrentClass] = useState<any>(null);
+  const [classes, setClasses] = useState<any[]>([]);
+  const [isClassesExpanded, setIsClassesExpanded] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
+  const classId = pathname.split('/classes/')[1]?.split('/')[0];
+
+  useEffect(() => {
+    if (classId) {
+      supabase.from('classes').select('*').eq('id', classId).single().then(({ data }) => {
+        if (data) setCurrentClass(data);
+      });
+    } else {
+      setCurrentClass(null);
+    }
+  }, [classId]);
+
+  useEffect(() => {
+    if (session) {
+      supabase.from('classes').select('*').eq('instructor_id', session.user.id).then(({ data }) => {
+        if (data) setClasses(data);
+      });
+    }
+  }, [session]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }: any) => {
@@ -77,10 +100,15 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
   }
 
   const menuItems = [
-    { id: 'submissions', label: 'Submissions', icon: FileCode, href: '/instructor/submissions' },
-    { id: 'assignments', label: 'Assignments', icon: BookOpen, href: '/instructor/assignments' },
-    { id: 'questions', label: 'Questions', icon: MessageSquare, href: '/instructor/questions' },
+    { id: 'classes', label: 'Classes', icon: School, href: '/instructor/classes' },
     { id: 'profile', label: 'Profile', icon: User, href: '/instructor/profile' },
+  ];
+
+  const classMenuItems = [
+    { id: 'assignments', label: 'Assignments', icon: BookOpen },
+    { id: 'submissions', label: 'Submissions', icon: FileCode },
+    { id: 'questions', label: 'Questions', icon: MessageSquare },
+    { id: 'materials', label: 'Materials', icon: FolderOpen },
   ];
 
   return (
@@ -91,28 +119,61 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
           <div className="p-6 border-b border-slate-200 dark:border-slate-800">
             <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center">
               <LayoutDashboard className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" />
-              Instructor Panel
+              Instructor
             </h1>
           </div>
           <nav className="flex-1 p-4 space-y-1">
-            {menuItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
-                      : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
-                  }`}
-                >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
+            {/* Class Specific Sidebar */}
+            {currentClass ? (
+              <div className="space-y-4">
+                <Link href="/instructor/classes" className="flex items-center text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+                    <ChevronLeft className='w-5 h-5' />
+                    Back to home
                 </Link>
-              );
-            })}
+                 <p className="text-sm font-bold truncate text-slate-800 dark:text-white uppercase mb-5">{currentClass.name}</p>
+                <div className="space-y-1">
+                  {classMenuItems.map((item) => {
+                    const itemHref = `/instructor/classes/${classId}/${item.id}`;
+                    const isActive = pathname.startsWith(itemHref);
+                    return (
+                      <Link
+                        key={item.id}
+                        href={itemHref}
+                        className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                          isActive
+                            ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
+                            : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                        }`}
+                      >
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {menuItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                        isActive
+                          ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400'
+                          : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.label}</span>
+                    </Link>
+
+                  );
+                })}
+              </div>
+            )}
           </nav>
           <div className="p-4 border-t border-slate-200 dark:border-slate-800 relative flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center font-bold text-indigo-600 dark:text-indigo-400">

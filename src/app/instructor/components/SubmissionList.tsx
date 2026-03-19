@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Loader2, FileCode, ExternalLink, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { Submission, Assignment } from '../types';
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface SubmissionListProps {
   submissions: Submission[];
@@ -56,11 +57,11 @@ export function SubmissionList({
 
   if (submissions.length === 0) {
     return (
-      <div className="p-16 text-center text-slate-500 dark:text-slate-400">
-        <FileCode className="h-12 w-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-        <p className="text-lg font-medium text-slate-900 dark:text-white">No submissions found</p>
-        <p className="mt-1">Students haven't submitted any assignments yet.</p>
-      </div>
+      <EmptyState
+        icon={<FileCode className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-3" />}
+        title="No submissions yet"
+        description="Students will appear here when they submit assignments."
+      />
     );
   }
 
@@ -182,6 +183,7 @@ export function SubmissionList({
                       <div className="flex justify-end space-x-2">
                         <Button
                           onClick={() => cancelEdit()}
+                          variant="outline"
                           disabled={isSaving}
                           className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition"
                         >
@@ -192,8 +194,7 @@ export function SubmissionList({
                           disabled={isSaving}
                           className="inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition bg-indigo-50 dark:bg-indigo-900/30 px-4 py-1.5 rounded-full"
                         >
-                          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
-                          Save
+                          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
                         </Button>
                       </div>
                     ) : (
