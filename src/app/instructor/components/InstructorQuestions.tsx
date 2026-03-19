@@ -7,6 +7,7 @@ import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { Loader2, MessageSquare, Send, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { sendEmailNotification } from '@/lib/notify';
 
 export function InstructorQuestions() {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -64,6 +65,23 @@ export function InstructorQuestions() {
       setAnsweringId(null);
       setAnswerText('');
       toast.success('Answer saved!');
+
+      // Notify the student
+      const question = questions.find(q => q.id === id);
+      if (question?.student_id) {
+        const { data: studentProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', question.student_id)
+          .single();
+
+        if (studentProfile?.email) {
+          sendEmailNotification(studentProfile.email, 'question_answered', {
+            question: question.message,
+            answer: answerText.trim(),
+          });
+        }
+      }
     } catch (err: any) {
       toast.error('Error saving answer.');
     } finally {
@@ -126,7 +144,7 @@ export function InstructorQuestions() {
                        <div className="flex space-x-2">
                             <Button onClick={() => setAnsweringId(null)} className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white rounded-full">Cancel</Button>
                             <Button onClick={() => handleSaveAnswer(q.id)} disabled={isSaving} className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center">
-                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />} Save Answer
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />} Send
                             </Button>
                        </div>
                   </div>

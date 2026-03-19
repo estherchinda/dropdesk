@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Loader2, Search } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { sendEmailNotification } from '@/lib/notify';
 
 import { Submission, Assignment } from '../../../types';
 import { SubmissionList } from '../../../components/SubmissionList';
@@ -87,6 +88,22 @@ export default function SubmissionsPage() {
       setSubmissions(prev => prev.map(s => s.id === id ? { ...s, grade: formattedGrade } : s));
       setEditingId(null);
       toast.success('Grade saved successfully!');
+
+      // Send email notification to student
+      if (formattedGrade && subToUpdate) {
+        const { data: studentProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', subToUpdate.student_id)
+          .single();
+
+        if (studentProfile?.email) {
+          sendEmailNotification(studentProfile.email, 'grade_notification', {
+            assignmentTitle: subToUpdate.assignment_title,
+            grade: formattedGrade,
+          });
+        }
+      }
     } catch (err: any) {
       toast.error(`Error updating grade: ${err.message}`);
     } finally {
@@ -115,6 +132,23 @@ export default function SubmissionsPage() {
       setSubmissions(prev => prev.map(s => s.id === selectedFeedbackSub.id ? { ...s, comment: formattedComment } : s));
       setFeedbackModalOpen(false);
       toast.success('Feedback saved successfully!');
+
+      // Send email notification with feedback
+      if (formattedComment) {
+        const { data: studentProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', selectedFeedbackSub.student_id)
+          .single();
+
+        if (studentProfile?.email) {
+          sendEmailNotification(studentProfile.email, 'grade_notification', {
+            assignmentTitle: selectedFeedbackSub.assignment_title,
+            grade: selectedFeedbackSub.grade || 'Pending',
+            feedback: formattedComment,
+          });
+        }
+      }
     } catch (err: any) {
       toast.error(`Error saving feedback: ${err.message}`);
     } finally {

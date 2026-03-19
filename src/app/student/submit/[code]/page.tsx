@@ -13,7 +13,7 @@ export default function Page() {
     <StudentSubmit 
       assignmentCode={params.code as string} 
       user={user} 
-      onBack={() => router.push('/student/assignments')} 
+      onBack={(classId) => router.push(classId ? `/student/classes/${classId}/assignments` : '/student/classes')} 
     />
   );
 }

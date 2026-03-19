@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '@/lib/utils';
+import { sendEmailNotification } from '@/lib/notify';
 
 export default function MaterialsPage() {
   const params = useParams();
@@ -94,6 +95,28 @@ export default function MaterialsPage() {
       setTitle('');
       setDescription('');
       setFiles([]);
+
+      // Notify enrolled students
+      const { data: enrollments } = await supabase
+        .from('class_enrollments')
+        .select('student_id')
+        .eq('class_id', classId);
+
+      if (enrollments && enrollments.length > 0) {
+        const studentIds = enrollments.map(e => e.student_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('email')
+          .in('id', studentIds);
+
+        if (profiles && profiles.length > 0) {
+          const emails = profiles.map(p => p.email);
+          sendEmailNotification(emails, 'new_material', {
+            materialTitle: title.trim(),
+            description: description.trim(),
+          });
+        }
+      }
     } catch (err: any) {
       toast.error(`Error adding material: ${err.message}`);
     } finally {
@@ -157,9 +180,9 @@ export default function MaterialsPage() {
                    {files.map((file, index) => (
                      <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in">
                        <div className="flex items-center space-x-2 truncate">
-                         <FileCode className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                         <FileCode className="w-4 h-4 text-slate-500 shrink-0" />
                          <span className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{file.name}</span>
-                         <span className="text-2xs text-slate-400 flex-shrink-0">({(file.size / 1024).toFixed(1)} KB)</span>
+                         <span className="text-2xs text-slate-400 shrink-0">({(file.size / 1024).toFixed(1)} KB)</span>
                        </div>
                        <button 
                          type="button" 
@@ -205,7 +228,8 @@ export default function MaterialsPage() {
                 {mat.file_urls && mat.file_urls.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {mat.file_urls.map((url: string, index: number) => (
-                      <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium max-w-xs truncate text-indigo-600 hover:underline shadow-sm hover:shadow">
+                      <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center p-2.5 bg-slate-50 
+                      dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium max-w-xs truncate text-indigo-600 hover:underline shadow-sm hover:shadow">
                         <FileCode className="w-3.5 h-3.5 mr-1 text-slate-500" /> Attached File
                       </a>
                     ))}

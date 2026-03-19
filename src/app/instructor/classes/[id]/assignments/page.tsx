@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { sendEmailNotification } from '@/lib/notify';
 
 import { Assignment, Submission } from '../../../types';
 import { AssignmentForm } from '../../../components/AssignmentForm';
@@ -103,6 +104,36 @@ export default function AssignmentsPage() {
       setNewDeadline('');
       setNewTotalScore('10');
       toast.success('Assignment created successfully!');
+
+      // Notify enrolled students about new assignment
+      // First get the class_id from the URL params
+      const pathParts = window.location.pathname.split('/');
+      const classIdx = pathParts.indexOf('classes');
+      const currentClassId = classIdx !== -1 ? pathParts[classIdx + 1] : null;
+
+      if (currentClassId) {
+        const { data: enrollments } = await supabase
+          .from('class_enrollments')
+          .select('student_id')
+          .eq('class_id', currentClassId);
+
+        if (enrollments && enrollments.length > 0) {
+          const studentIds = enrollments.map(e => e.student_id);
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('email')
+            .in('id', studentIds);
+
+          if (profiles && profiles.length > 0) {
+            const emails = profiles.map(p => p.email);
+            sendEmailNotification(emails, 'new_assignment', {
+              assignmentTitle: newTitle.trim(),
+              assignmentCode: code,
+              deadline: newDeadline ? new Date(newDeadline).toISOString() : null,
+            });
+          }
+        }
+      }
     } catch (err: any) {
       toast.error(`Error creating assignment: ${err.message}`);
     } finally {

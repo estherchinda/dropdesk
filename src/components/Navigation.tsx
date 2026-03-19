@@ -18,12 +18,12 @@ export default function Navigation() {
 
   return (
     <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
-      <div className="max-w-9xl">
+      <div className={`max-w-9xl ${isAuthPage ? 'mx-20' : 'mx-10'}`}>
         <div className="flex justify-between items-center h-20">
           <div className="shrink-0 flex items-center">
             <Link href="/" className='flex items-center relative'>
-              <div className="size-14 relative">
-                <Image src="/d-nobg.png" alt="Logo" fill />
+              <div className="size-12 mr-2 relative bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-2xl flex items-center justify-center">
+                <Image src="/d-nobg.png" alt="Logo" fill className="object-contain p-2" />
               </div>
               <span className="hidden md:block text-2xl font-bold uppercase">DropDesk</span>
             </Link>

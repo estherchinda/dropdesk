@@ -183,6 +183,7 @@ export function SubmissionList({
                       <div className="flex justify-end space-x-2">
                         <Button
                           onClick={() => cancelEdit()}
+                          variant="outline"
                           disabled={isSaving}
                           className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition"
                         >
@@ -193,8 +194,7 @@ export function SubmissionList({
                           disabled={isSaving}
                           className="inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition bg-indigo-50 dark:bg-indigo-900/30 px-4 py-1.5 rounded-full"
                         >
-                          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-1.5" />}
-                          Save
+                          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
                         </Button>
                       </div>
                     ) : (
