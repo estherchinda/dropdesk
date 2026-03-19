@@ -11,7 +11,6 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '@/lib/utils';
-import { sendEmailNotification } from '@/lib/notify';
 
 export default function MaterialsPage() {
   const params = useParams();
@@ -96,27 +95,7 @@ export default function MaterialsPage() {
       setDescription('');
       setFiles([]);
 
-      // Notify enrolled students
-      const { data: enrollments } = await supabase
-        .from('class_enrollments')
-        .select('student_id')
-        .eq('class_id', classId);
 
-      if (enrollments && enrollments.length > 0) {
-        const studentIds = enrollments.map(e => e.student_id);
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('email')
-          .in('id', studentIds);
-
-        if (profiles && profiles.length > 0) {
-          const emails = profiles.map(p => p.email);
-          sendEmailNotification(emails, 'new_material', {
-            materialTitle: title.trim(),
-            description: description.trim(),
-          });
-        }
-      }
     } catch (err: any) {
       toast.error(`Error adding material: ${err.message}`);
     } finally {

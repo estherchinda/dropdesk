@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { Loader2, CheckCircle, Clock, Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { sendEmailNotification } from '@/lib/notify';
-
 import { useStudent } from '../layout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { X } from 'lucide-react';
@@ -89,34 +87,6 @@ export function StudentQuestions() {
       setIsModalOpen(false); // Close Modal
       fetchQuestions(); // Refresh
 
-      // Notify instructor(s) about new question
-      // Get class context from URL
-      const pathParts = window.location.pathname.split('/');
-      const classIdx = pathParts.indexOf('classes');
-      const currentClassId = classIdx !== -1 ? pathParts[classIdx + 1] : null;
-
-      if (currentClassId) {
-        const { data: classData } = await supabase
-          .from('classes')
-          .select('instructor_id')
-          .eq('id', currentClassId)
-          .single();
-
-        if (classData?.instructor_id) {
-          const { data: instructorProfile } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('id', classData.instructor_id)
-            .single();
-
-          if (instructorProfile?.email) {
-            sendEmailNotification(instructorProfile.email, 'new_question', {
-              studentName: studentName.trim(),
-              message: message.trim(),
-            });
-          }
-        }
-      }
     } catch (err: any) {
       toast.error(err.message || 'Failed to ask question.');
     } finally {

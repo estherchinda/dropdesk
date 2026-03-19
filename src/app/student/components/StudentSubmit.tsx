@@ -8,7 +8,6 @@ import { useDropzone } from 'react-dropzone';
 import { FileUp, File, X, CheckCircle, Loader2, Calendar, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
-import { sendEmailNotification } from '@/lib/notify';
 
 type Assignment = {
   id: string;
@@ -145,30 +144,6 @@ export function StudentSubmit({ assignmentCode, user, onBack }: StudentSubmitPro
       setIsSubmitted(true);
       toast.success("Assignment submitted successfully!");
 
-      // Notify the instructor about the new submission
-      if (assignment?.class_id) {
-        const { data: classData } = await supabase
-          .from('classes')
-          .select('instructor_id')
-          .eq('id', assignment.class_id)
-          .single();
-
-        if (classData?.instructor_id) {
-          const { data: instructorProfile } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('id', classData.instructor_id)
-            .single();
-
-          if (instructorProfile?.email) {
-            sendEmailNotification(instructorProfile.email, 'new_submission', {
-              studentName,
-              assignmentTitle: assignment.title,
-              assignmentCode,
-            });
-          }
-        }
-      }
     } catch (err: any) {
       setError(`Upload failed: ${err.message}`);
     } finally {
