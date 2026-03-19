@@ -3,11 +3,10 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Loader2, BookOpen, MessageSquare, Award, LogOut, Menu, X, User } from 'lucide-react';
+import { Loader2, BookOpen, MessageSquare, Award, LogOut, Menu, X, User, School, FolderOpen, ChevronDown, ChevronLeft } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
 
-// Context to share user session without prop drilling
 const StudentContext = createContext<{ user: any }>({ user: null });
 
 export function useStudent() {
@@ -19,8 +18,23 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const [profileName, setProfileName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [enrolledClasses, setEnrolledClasses] = useState<any[]>([]);
+  const [currentClass, setCurrentClass] = useState<any>(null);
+  const [isClassesExpanded, setIsClassesExpanded] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
+  const classId = pathname.split('/classes/')[1]?.split('/')[0];
+
+  useEffect(() => {
+    if (classId) {
+      supabase.from('classes').select('*').eq('id', classId).single().then(({ data }) => {
+        if (data) setCurrentClass(data);
+      });
+    } else {
+      setCurrentClass(null);
+    }
+  }, [classId]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -59,6 +73,27 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       setSession(session);
       if (data?.name) setProfileName(data.name);
       setLoading(false);
+      fetchEnrolledClasses(session.user.id);
+    }
+  };
+
+  const fetchEnrolledClasses = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('class_enrollments')
+        .select(`
+          classes (
+            id,
+            name
+          )
+        `)
+        .eq('student_id', userId);
+      
+      if (data) {
+        setEnrolledClasses(data.map((d: any) => d.classes) || []);
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -77,10 +112,15 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   }
 
   const menuItems = [
-    { id: 'assignments', label: 'Assignments', icon: BookOpen, href: '/student/assignments' },
-    { id: 'questions', label: 'Questions', icon: MessageSquare, href: '/student/questions' },
-    { id: 'grades', label: 'Grades', icon: Award, href: '/student/grades' },
+    { id: 'classes', label: 'Home', icon: School, href: '/student/classes' },
     { id: 'profile', label: 'Profile', icon: User, href: '/student/profile' },
+  ];
+
+  const classMenuItems = [
+    { id: 'assignments', label: 'Assignments', icon: BookOpen },
+    { id: 'questions', label: 'Questions', icon: MessageSquare },
+    { id: 'materials', label: 'Materials', icon: FolderOpen },
+    { id: 'grades', label: 'Grades', icon: Award },
   ];
 
   return (
@@ -89,23 +129,57 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         {/* Sidebar - Desktop */}
         <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
           <nav className="flex-1 p-4 space-y-1">
-            {menuItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400'
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  <item.icon className="w-5 h-5 mr-3" />
-                  {item.label}
+            {/* Class Specific Sidebar */}
+            {currentClass ? (
+              <div className="space-y-4">
+                <Link href="/student/classes" className="flex items-center text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
+                    <ChevronLeft className='w-5 h-5' />
+                    Back to home
                 </Link>
-              );
-            })}
+                <p className="text-sm font-bold truncate text-slate-800 dark:text-white uppercase mb-5">{currentClass.name}</p>
+                <div className="space-y-1">
+                  {classMenuItems.map((item) => {
+                    const itemHref = `/student/classes/${classId}/${item.id}`;
+                    const isActive = pathname.startsWith(itemHref);
+                    return (
+                      <Link
+                        key={item.id}
+                        href={itemHref}
+                        className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                          isActive
+                            ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <item.icon className="w-5 h-5 mr-3" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {menuItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                        isActive
+                          ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5 mr-3" />
+                      <span>{item.label}</span>
+                    </Link>
+
+                  );
+                })}
+              </div>
+            )}
           </nav>
           <div className="p-4 border-b border-slate-200 dark:border-slate-800 relative flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center font-bold text-indigo-600 dark:text-indigo-400">

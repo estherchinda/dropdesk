@@ -7,7 +7,7 @@ export default function InstructorDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/instructor/submissions');
+    router.replace('/instructor/classes');
   }, [router]);
 
   return null;

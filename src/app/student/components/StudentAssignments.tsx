@@ -76,19 +76,13 @@ export function StudentAssignments() {
       localStorage.setItem(`unlocked_codes_${user.id}`, JSON.stringify(updatedCodes));
       toast.success('Assignment unlocked!');
       setSelectedAssignment(null);
+      router.push(`/student/submit/${selectedAssignment.assignment_code}`);
     } else {
       toast.error('Invalid code. Please try again.');
     }
     setIsVerifying(false);
   };
 
-  const forgetCode = (code: string) => {
-    const updatedCodes = unlockedCodes.filter(c => c !== code);
-    setUnlockedCodes(updatedCodes);
-    localStorage.setItem(`unlocked_codes_${user.id}`, JSON.stringify(updatedCodes));
-    toast.info('Assignment locked.');
-    setSelectedAssignment(null);
-  };
 
   if (loading) {
     return (
@@ -196,14 +190,6 @@ export function StudentAssignments() {
                     <div className="flex w-full space-x-2">
                         <Button onClick={() => router.push(`/student/submit/${assignment.assignment_code}`)} variant="default" className="flex-1">
                           <Eye className="w-4 h-4 mr-2" /> View & Submit
-                        </Button>
-                        <Button 
-                            onClick={() => forgetCode(assignment.assignment_code)}
-                            variant="outline"
-                            className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                            title="Lock this assignment code"
-                        >
-                            Forget Code
                         </Button>
                     </div>
                   ) : (

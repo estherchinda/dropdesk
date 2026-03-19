@@ -7,7 +7,7 @@ export default function StudentDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/student/assignments');
+    router.replace('/student/classes');
   }, [router]);
 
   return null;

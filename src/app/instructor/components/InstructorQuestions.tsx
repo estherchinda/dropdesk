@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { Loader2, MessageSquare, Send, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export function InstructorQuestions() {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -86,9 +87,11 @@ export function InstructorQuestions() {
       </div>
 
       {questions.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-500">
-           No questions found.
-        </div>
+        <EmptyState
+          icon={<MessageSquare className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-3" />}
+          title="No questions yet"
+          description="Students will appear here when they ask questions."
+        />
       ) : (
         <div className="space-y-4">
           {questions.map((q) => (

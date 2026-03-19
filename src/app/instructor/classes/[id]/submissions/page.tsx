@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/Input';
 import { Loader2, Search } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-import { Submission, Assignment } from '../types';
-import { SubmissionList } from '../components/SubmissionList';
-import { FeedbackModal } from '../components/FeedbackModal';
+import { Submission, Assignment } from '../../../types';
+import { SubmissionList } from '../../../components/SubmissionList';
+import { FeedbackModal } from '../../../components/FeedbackModal';
 
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);

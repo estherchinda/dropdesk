@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/Button';
 import { Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-import { Assignment, Submission } from '../types';
-import { AssignmentForm } from '../components/AssignmentForm';
-import { AssignmentList } from '../components/AssignmentList';
-import { DeleteAssignmentModal } from '../components/DeleteAssignmentModal';
+import { Assignment, Submission } from '../../../types';
+import { AssignmentForm } from '../../../components/AssignmentForm';
+import { AssignmentList } from '../../../components/AssignmentList';
+import { DeleteAssignmentModal } from '../../../components/DeleteAssignmentModal';
 
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
