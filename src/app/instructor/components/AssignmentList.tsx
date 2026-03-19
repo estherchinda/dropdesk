@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from "@/components/ui/Button";
-import { Loader2, Pencil, Trash2 } from 'lucide-react';
+import { FileCode, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Assignment, Submission } from '../types';
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface AssignmentListProps {
   assignments: Assignment[];
@@ -32,9 +33,11 @@ export function AssignmentList({
 
   if (assignments.length === 0) {
     return (
-      <div className="p-10 text-center text-slate-500 dark:text-slate-400">
-        <p>No assignments created yet.</p>
-      </div>
+      <EmptyState
+        title="No Assignments Yet"
+        description="Create your first assignment to get started."
+        icon={<FileCode className="mb-4 h-12 w-12 text-slate-400 dark:text-slate-500" />}
+      />
     );
   }
 

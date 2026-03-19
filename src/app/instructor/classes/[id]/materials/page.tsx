@@ -5,9 +5,12 @@ import { supabase } from '@/lib/supabase';
 import { useParams } from 'next/navigation';
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Loader2, Plus, FolderOpen, FileCode } from 'lucide-react';
+import { Loader2, Plus, FolderOpen, FileCode, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { useDropzone } from 'react-dropzone';
+import { cn } from '@/lib/utils';
 
 export default function MaterialsPage() {
   const params = useParams();
@@ -20,6 +23,12 @@ export default function MaterialsPage() {
   const [description, setDescription] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      setFiles(prev => [...prev, ...acceptedFiles]);
+    }
+  });
 
   useEffect(() => {
     fetchMaterials();
@@ -111,26 +120,62 @@ export default function MaterialsPage() {
            <h3 className="text-md font-bold">New Material</h3>
            <form onSubmit={handleAddMaterial} className="space-y-4">
              <div>
-               <label className="block text-sm font-medium mb-1">Title *</label>
-               <Input type="text" value={title} onChange={e => setTitle(e.target.value)} required />
+               <label className="block text-sm font-medium mb-1">Title <span className="text-red-500">*</span></label>
+               <Input 
+                 type="text" 
+                 value={title} 
+                 onChange={e => setTitle(e.target.value)} required 
+                 className="w-full px-5 py-2 border border-slate-300 dark:border-slate-600 rounded-full focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none"
+               />
              </div>
              <div>
                <label className="block text-sm font-medium mb-1">Description</label>
-               <textarea 
-                 className="w-full p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-800 text-sm" 
-                 rows={4} 
-                 value={description} 
-                 onChange={e => setDescription(e.target.value)}
-                 placeholder="Plain text or short notes..."
+               <RichTextEditor
+                 content={description}
+                 onChange={setDescription}
+                 placeholder="Instructions for the assignment..."
+                 className="w-full h-64"
                />
              </div>
              <div>
                <label className="text-sm font-medium mb-2 flex items-center"><FolderOpen className="w-4 h-4 mr-1 text-indigo-600" /> Files</label>
-               <input type="file" multiple onChange={(e) => e.target.files && setFiles(Array.from(e.target.files))} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+               <div 
+                 {...getRootProps()} 
+                 className={cn(
+                   "border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center cursor-pointer transition", 
+                   isDragActive ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/10" : "hover:border-indigo-500"
+                 )}
+               >
+                 <input {...getInputProps()} />
+                 <FolderOpen className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                 <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Drag & drop files here, or click to select</p>
+                 <p className="text-xs text-slate-400 mt-1">Multiple files allowed</p>
+               </div>
+
+               {files.length > 0 && (
+                 <div className="mt-4 space-y-2">
+                   {files.map((file, index) => (
+                     <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in">
+                       <div className="flex items-center space-x-2 truncate">
+                         <FileCode className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                         <span className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{file.name}</span>
+                         <span className="text-2xs text-slate-400 flex-shrink-0">({(file.size / 1024).toFixed(1)} KB)</span>
+                       </div>
+                       <button 
+                         type="button" 
+                         onClick={() => setFiles(prev => prev.filter((_, i) => i !== index))} 
+                         className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition cursor-pointer"
+                       >
+                         <X className="w-4 h-4" />
+                       </button>
+                     </div>
+                   ))}
+                 </div>
+               )}
              </div>
              <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>Cancel</Button>
-                <Button type="submit" disabled={isUploading || !title.trim()}>
+                <Button type="submit" variant='default' disabled={isUploading || !title.trim()}>
                   {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
                 </Button>
              </div>
@@ -151,7 +196,12 @@ export default function MaterialsPage() {
            {materials.map(mat => (
               <div key={mat.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
                 <h3 className="font-bold text-lg">{mat.title}</h3>
-                {mat.description && <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{mat.description}</p>}
+                {mat.description && (
+                  <div 
+                    className="text-sm text-slate-600 dark:text-slate-400 mt-2 tiptap" 
+                    dangerouslySetInnerHTML={{ __html: mat.description }} 
+                  />
+                )}
                 {mat.file_urls && mat.file_urls.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {mat.file_urls.map((url: string, index: number) => (
