@@ -94,14 +94,14 @@ export function StudentAssignments() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Assignments</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">View and submit class assignments</p>
         </div>
         
-        <div className="flex items-center space-x-3">
-          <div className="relative w-64">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center w-full md:w-auto space-y-3 sm:space-y-0 sm:space-x-3">
+          <div className="relative w-full sm:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-slate-400" />
             </div>
@@ -115,7 +115,7 @@ export function StudentAssignments() {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center space-x-1 border border-slate-200 dark:border-slate-800 rounded-full bg-white dark:bg-slate-900 p-1">
+          <div className="flex items-center space-x-1 border border-slate-200 dark:border-slate-800 rounded-full bg-white dark:bg-slate-900 p-1 self-end sm:self-auto">
             <Button
               onClick={() => setViewMode('grid')}
               variant={viewMode === 'grid' ? 'default' : 'ghost'}

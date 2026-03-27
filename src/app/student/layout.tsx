@@ -212,25 +212,58 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                       <X className="w-5 h-5 text-slate-500" />
                   </button>
               </div>
-              <nav className="flex-1 p-4 space-y-1">
-                {menuItems.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      onClick={() => setIsSidebarOpen(false)}
-                      className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                        isActive
-                          ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400'
-                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      <item.icon className="w-5 h-5 mr-3" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
+              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                {currentClass ? (
+                  <div className="space-y-4">
+                  <Link href="/student/classes" onClick={() => setIsSidebarOpen(false)} className="flex items-center text-xs text-indigo-600 dark:text-indigo-400 hover:underline mb-2">
+                      <ChevronLeft className='w-5 h-5' />
+                      Back to home
+                  </Link>
+                  <p className="text-sm font-bold truncate text-slate-800 dark:text-white uppercase mb-5">{currentClass.name}</p>
+                  <div className="space-y-1">
+                    {classMenuItems.map((item) => {
+                      const itemHref = `/student/classes/${classId}/${item.id}`;
+                      const isActive = pathname.startsWith(itemHref);
+                      return (
+                        <Link
+                          key={item.id}
+                          href={itemHref}
+                          onClick={() => setIsSidebarOpen(false)}
+                          className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                            isActive
+                              ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400'
+                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          <item.icon className="w-5 h-5 mr-3" />
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+                ) : (
+                  <div className="space-y-1">
+                    {menuItems.map((item) => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.id}
+                          href={item.href}
+                          onClick={() => setIsSidebarOpen(false)}
+                          className={`w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                            isActive
+                              ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400'
+                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          <item.icon className="w-5 h-5 mr-3" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </nav>
               <div className="p-4 border-t border-slate-200 dark:border-slate-800">
                 <button
