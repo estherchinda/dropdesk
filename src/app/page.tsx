@@ -71,18 +71,19 @@ function HomeContent() {
         // Wait for auth headers to propagate fully in client session execution
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Profile doesn't exist (e.g. historical account). Auto-create using active state.
+        // Profile doesn't exist (e.g. historical account). Auto-create using metadata or active state.
+        const userRole = session.user.user_metadata?.role || activeRole;
         const { error: insertError } = await supabase
           .from('profiles')
           .insert({
             id: session.user.id,
             email: session.user.email || '',
-            role: activeRole,
+            role: userRole,
           });
 
         if (insertError) throw insertError;
         
-        if (activeRole === 'instructor') {
+        if (userRole === 'instructor') {
           router.push('/instructor');
         } else {
           router.push('/student');
@@ -110,24 +111,22 @@ function HomeContent() {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: 'https://dropdesk.xyz/',
+            data: {
+              role: activeRole,
+            }
+          }
         });
 
         if (signUpError) throw signUpError;
         
-        if (data.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: data.user.id,
-              email: email,
-              role: activeRole,
-            });
-
-          if (profileError) throw profileError;
+        if (data.session) {
           toast.success('Account created successfully!');
-          
-          if (activeRole === 'instructor') router.push('/instructor');
-          else router.push('/student');
+          checkRole(data.session);
+        } else if (data.user) {
+          toast.success('Successfully registered! Please check your email to verify your account.');
+          // Do not push router here; wait for them to verify and login
         }
       } else {
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
