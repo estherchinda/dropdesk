@@ -104,12 +104,12 @@ export function StudentQuestions() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
          <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">My Questions</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">Ask questions and see instructor answers.</p>
          </div>
-         <Button onClick={() => setIsModalOpen(true)} variant="default">
+         <Button onClick={() => setIsModalOpen(true)} variant="default" className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Ask a Question</Button>
       </div>

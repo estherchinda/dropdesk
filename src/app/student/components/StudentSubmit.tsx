@@ -227,9 +227,9 @@ export function StudentSubmit({ assignmentCode, user, onBack }: StudentSubmitPro
       )}
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Upload Work</h2>
-          <div className="text-sm text-slate-500">Submitting as <span className="font-semibold text-indigo-600">{studentName}</span></div>
+          <div className="text-sm text-slate-500 wrap-break-word max-w-full">Submitting as <span className="font-semibold text-indigo-600 break-all">{studentName}</span></div>
         </div>
         
         <div className="p-8 space-y-6">
