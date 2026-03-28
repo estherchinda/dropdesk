@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { Submission, Assignment } from '../../../types';
 import { SubmissionList } from '../../../components/SubmissionList';
 import { FeedbackModal } from '../../../components/FeedbackModal';
+import { sendNotification } from '@/lib/notify';
 
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -87,6 +88,16 @@ export default function SubmissionsPage() {
       setEditingId(null);
       toast.success('Grade saved successfully!');
 
+      if (subToUpdate && formattedGrade) {
+        await sendNotification({
+          type: 'ASSIGNMENT_GRADED',
+          studentId: subToUpdate.student_id,
+          title: subToUpdate.assignment_title || 'Assignment',
+          link: '/student/classes',
+          extraData: { grade: formattedGrade, comment: subToUpdate.comment }
+        });
+      }
+
     } catch (err: any) {
       toast.error(`Error updating grade: ${err.message}`);
     } finally {
@@ -115,6 +126,16 @@ export default function SubmissionsPage() {
       setSubmissions(prev => prev.map(s => s.id === selectedFeedbackSub.id ? { ...s, comment: formattedComment } : s));
       setFeedbackModalOpen(false);
       toast.success('Feedback saved successfully!');
+
+      if (formattedComment) {
+        await sendNotification({
+          type: 'ASSIGNMENT_GRADED',
+          studentId: selectedFeedbackSub.student_id,
+          title: selectedFeedbackSub.assignment_title || 'Assignment',
+          link: '/student/classes',
+          extraData: { grade: selectedFeedbackSub.grade, comment: formattedComment }
+        });
+      }
 
     } catch (err: any) {
       toast.error(`Error saving feedback: ${err.message}`);

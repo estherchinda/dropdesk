@@ -7,7 +7,7 @@ import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { Loader2, MessageSquare, Send, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { EmptyState } from '@/components/ui/EmptyState';
-
+import { sendNotification } from '@/lib/notify';
 
 export function InstructorQuestions() {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -65,7 +65,17 @@ export function InstructorQuestions() {
       setAnsweringId(null);
       setAnswerText('');
       toast.success('Answer saved!');
-
+      
+      const answeredQuestion = questions.find(q => q.id === id);
+      if (answeredQuestion) {
+        await sendNotification({
+          type: 'QUESTION_ANSWERED',
+          studentId: answeredQuestion.student_id,
+          title: answeredQuestion.message,
+          link: '/student/questions',
+          extraData: { answer: answerText.trim() }
+        });
+      }
 
     } catch (err: any) {
       toast.error('Error saving answer.');
