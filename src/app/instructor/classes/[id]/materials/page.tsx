@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '@/lib/utils';
+import { sendNotification } from '@/lib/notify';
 
 export default function MaterialsPage() {
   const params = useParams();
@@ -91,6 +92,15 @@ export default function MaterialsPage() {
       toast.success('Material added successfully!');
       setMaterials([data, ...materials]);
       setIsCreating(false);
+      
+      // Notify students
+      await sendNotification({
+        type: 'MATERIAL_ADDED',
+        classId,
+        title: title.trim(),
+        link: `/student/classes/${classId}/materials`
+      });
+
       setTitle('');
       setDescription('');
       setFiles([]);

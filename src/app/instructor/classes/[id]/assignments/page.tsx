@@ -11,8 +11,12 @@ import { Assignment, Submission } from '../../../types';
 import { AssignmentForm } from '../../../components/AssignmentForm';
 import { AssignmentList } from '../../../components/AssignmentList';
 import { DeleteAssignmentModal } from '../../../components/DeleteAssignmentModal';
+import { useParams } from 'next/navigation';
+import { sendNotification } from '@/lib/notify';
 
 export default function AssignmentsPage() {
+  const params = useParams();
+  const classId = params.id as string;
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loadingAssignments, setLoadingAssignments] = useState(false);
@@ -40,7 +44,7 @@ export default function AssignmentsPage() {
   useEffect(() => {
     fetchAssignments();
     fetchSubmissions();
-  }, []);
+  }, [classId]);
 
   const fetchAssignments = async () => {
     setLoadingAssignments(true);
@@ -86,6 +90,7 @@ export default function AssignmentsPage() {
       const { data: insertedData, error: insertError } = await supabase
         .from('assignments')
         .insert({
+          class_id: classId,
           assignment_code: code,
           title: newTitle.trim(),
           description: newDescription.trim() || null,
@@ -99,6 +104,16 @@ export default function AssignmentsPage() {
 
       setAssignments([insertedData, ...assignments]);
       setCreatedCode(code);
+      
+      // Notify students
+      await sendNotification({
+        type: 'ASSIGNMENT_ADDED',
+        classId,
+        title: newTitle.trim(),
+        link: `/student/classes/${classId}`,
+        extraData: { description: newDescription.trim() }
+      });
+
       setNewTitle('');
       setNewDescription('');
       setNewDeadline('');
